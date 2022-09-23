@@ -1,0 +1,33 @@
+services:
+
+  listener:
+    build:
+      context: .
+      dockerfile: Dockerfile.chatter
+    container_name: super-client
+    depends_on:
+      husarnet-listener:
+        condition: service_healthy
+    network_mode: service:husarnet-listener
+    volumes: 
+      - ./dds-config.super-client.xml:/dds-config.xml
+    environment:
+      - FASTRTPS_DEFAULT_PROFILES_FILE=/dds-config.xml
+    command: ros2 run demo_nodes_cpp listener
+
+  husarnet-listener:
+    build:
+      context: .
+      dockerfile: Dockerfile.husarnet
+    volumes:
+      - /var/lib/husarnet
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    environment: 
+      - HOSTNAME=my-listener
+      - JOINCODE=${JOINCODE:?you need to create .env file with a JOINCODE variable}
+      - WAIT_FOR_HOST=my-talker

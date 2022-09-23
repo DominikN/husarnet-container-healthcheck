@@ -1,0 +1,8 @@
+FROM husarnet/husarnet
+
+ENV WAIT_FOR_HOST=
+
+
+# every 1 second check whether WAIT_FOR_HOST hostname is available in /etc/hosts
+HEALTHCHECK --interval=1s --timeout=5s --retries=20 \
+    CMD if [[ $$(cat /etc/hosts | grep "$WAIT_FOR_HOST # managed by Husarnet" | wc -l) -eq 0 ]]; then exit 1; else exit 0; fi
